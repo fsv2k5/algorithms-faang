@@ -1,6 +1,7 @@
 # FAANG Algorithms Interview Using Java Stream API and HashMap/HashSet
 
 ## 1. Two Sum 
+### Description: Return indices of two numbers that add up to target.
 ```
 public int[] twoSum(int[] nums, int target) {
     Map<Integer, Integer> map = new HashMap<>();
@@ -14,6 +15,7 @@ public int[] twoSum(int[] nums, int target) {
 ```
 
 ## 2. Group Anagrams
+### Description: Group all strings that are anagrams of each other.  
 ```
 public List<List<String>> groupAnagrams(String[] strs) {
     return new ArrayList<>(Arrays.stream(strs)
@@ -27,6 +29,7 @@ public List<List<String>> groupAnagrams(String[] strs) {
 ```
 
 ## 3. Top K Frequent Elements 
+### Description: Return the k most frequent elements in the array.   
 ```
 public int[] topKFrequent(int[] nums, int k) {
     return Arrays.stream(nums)
@@ -41,6 +44,7 @@ public int[] topKFrequent(int[] nums, int k) {
 ```
 
 ## 4. First Unique Character in a String 
+### Description: Return the index of the first character that appears only once (-1 if none).  
 ```
 public int firstUniqChar(String s) {
     Map<Character, Integer> counts = new HashMap<>();
@@ -52,6 +56,7 @@ public int firstUniqChar(String s) {
 ```
 
 ## 5. Contains Duplicate 
+### Description: Return true if any value appears at least twice in the array.  
 ```
 public boolean containsDuplicate(int[] nums) {
     return Arrays.stream(nums)
@@ -61,6 +66,7 @@ public boolean containsDuplicate(int[] nums) {
 ```
 
 ## 6. Valid Anagram 
+### Description: Return true if t is an anagram of s.
 ```
 public boolean isAnagram(String s, String t) {
     if (s.length() != t.length()) return false;
@@ -75,6 +81,7 @@ public boolean isAnagram(String s, String t) {
 ```
 
 ## 7. Subarray Sum Equals K 
+### Description: Return the total number of subarrays whose sum equals k.  
 ```
 public int subarraySum(int[] nums, int k) {
     int count = 0, sum = 0;
@@ -90,6 +97,7 @@ public int subarraySum(int[] nums, int k) {
 ```
 
 ## 8. Intersection of Two Arrays 
+### Description: Return an array of elements that appear in both input arrays (any order).  
 ```
 public int[] intersection(int[] nums1, int[] nums2) {
     Set<Integer> set = Arrays.stream(nums1)
@@ -103,6 +111,7 @@ public int[] intersection(int[] nums1, int[] nums2) {
 ```
 
 ## 9. Word Pattern 
+### Description: Return true if the string follows the same pattern as the given pattern.  
 ```
 public boolean wordPattern(String pattern, String s) {
     String[] words = s.split(" ");
@@ -115,6 +124,7 @@ public boolean wordPattern(String pattern, String s) {
 ```
 
 ## 10. Majority Element 
+### Description: Return the element that appears more than n/2 times.
 ```
 public int majorityElement(int[] nums) {
     return Arrays.stream(nums).boxed()
@@ -127,6 +137,7 @@ public int majorityElement(int[] nums) {
 ```
 
 ## 11. Sort Characters By Frequency
+### Description: Return the string with characters sorted by descending frequency. 
 ```
 public String frequencySort(String s) {
     Map<Character, Long> map = s.chars()
@@ -140,6 +151,7 @@ public String frequencySort(String s) {
 ```
 
 ## 12. Longest Substring Without Repeating Characters 
+### Description: Return the length of the longest substring without repeating characters. 
 ```
 public int lengthOfLongestSubstring(String s) {
     Map<Character, Integer> map = new HashMap<>();
@@ -154,6 +166,7 @@ public int lengthOfLongestSubstring(String s) {
 ```
 
 ## 13. Jewels and Stones 
+### Description: Return how many stones are also jewels (count characters in jewels are unique). 
 ```
 public int numJewelsInStones(String jewels, String stones) {
     Set<Character> jewelSet = jewels.chars()
@@ -166,6 +179,7 @@ public int numJewelsInStones(String jewels, String stones) {
 ```
 
 ## 14. All Anagrams in a String 
+### Description: Return starting indices of all anagrams of p in s.  
 ```
 public List<Integer> findAnagrams(String s, String p) {
     Map<Character, Long> pMap = p.chars()
@@ -184,6 +198,7 @@ public List<Integer> findAnagrams(String s, String p) {
 ```
 
 ## 15. Roman to Integer 
+### Description: Convert a Roman numeral string to an integer.       
 ```
 public int romanToInt(String s) {
     Map<Character, Integer> map = Map.of('I', 1, 'V', 5, 'X', 10, 'L', 50, 'C', 100, 'D', 500, 'M', 1000);
@@ -198,6 +213,7 @@ public int romanToInt(String s) {
 ```
 
 ## 16. Valid Sudoku
+### Description: Return true if the 9×9 Sudoku board is valid (no conflicts in rows/cols/boxes).
 ```
 public boolean isValidSudoku(char[][] board) {
     Set<String> seen = new HashSet<>();
@@ -215,6 +231,7 @@ public boolean isValidSudoku(char[][] board) {
 ```
 
 ## 17. Contiguous Array
+### Description: Return the longest subarray length with equal number of 0s and 1s. 
 ```
 public int findMaxLength(int[] nums) {
     Map<Integer, Integer> firstIndex = new HashMap<>();
@@ -230,6 +247,7 @@ public int findMaxLength(int[] nums) {
 ```
 
 ## 18. 4 Sum 
+### Description: Return all unique quadruplets in the array that sum to target. 
 ```
 public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
     Map<Integer, Long> sum12 = Arrays.stream(nums1)
@@ -248,6 +266,7 @@ public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
 ```
 
 ## 19. Minimum Window Substring 
+### Description: Return the smallest substring of s that contains all characters of t (including duplicates).
 ```
 public String minWindow(String s, String t) {
     Map<Character, Long> targetCount = t.chars()
