@@ -1,4 +1,4 @@
-# FAANG Algorithms Interview Using Java Stream API
+# FAANG Algorithms Interview Using Java Stream API and HashMap/HashSet
 
 ## 1. Two Sum 
 ```
@@ -21,7 +21,8 @@ public List<List<String>> groupAnagrams(String[] strs) {
             char[] chars = s.toCharArray();
             Arrays.sort(chars);
             return new String(chars);
-        })).values());
+        }))
+        .values());
 }
 ```
 
@@ -53,7 +54,9 @@ public int firstUniqChar(String s) {
 ## 5. Contains Duplicate 
 ```
 public boolean containsDuplicate(int[] nums) {
-    return Arrays.stream(nums).distinct().count() != nums.length;
+    return Arrays.stream(nums)
+        .distinct()
+        .count() != nums.length;
 }
 ```
 
@@ -61,8 +64,12 @@ public boolean containsDuplicate(int[] nums) {
 ```
 public boolean isAnagram(String s, String t) {
     if (s.length() != t.length()) return false;
-    Map<Character, Long> sm = s.chars().mapToObj(c -> (char)c).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    Map<Character, Long> tm = t.chars().mapToObj(c -> (char)c).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+    Map<Character, Long> sm = s.chars()
+        .mapToObj(c -> (char)c)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+    Map<Character, Long> tm = t.chars()
+        .mapToObj(c -> (char)c)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     return sm.equals(tm);
 }
 ```
@@ -85,8 +92,13 @@ public int subarraySum(int[] nums, int k) {
 ## 8. Intersection of Two Arrays 
 ```
 public int[] intersection(int[] nums1, int[] nums2) {
-    Set<Integer> set = Arrays.stream(nums1).boxed().collect(Collectors.toSet());
-    return Arrays.stream(nums2).distinct().filter(set::contains).toArray();
+    Set<Integer> set = Arrays.stream(nums1)
+        .boxed()
+        .collect(Collectors.toSet());
+    return Arrays.stream(nums2)
+        .distinct()
+        .filter(set::contains)
+        .toArray();
 }
 ```
 
@@ -109,14 +121,17 @@ public int majorityElement(int[] nums) {
         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
         .entrySet().stream()
         .max(Map.Entry.comparingByValue())
-        .get().getKey();
+        .get()
+        .getKey();
 }
 ```
 
 ## 11. Sort Characters By Frequency
 ```
 public String frequencySort(String s) {
-    Map<Character, Long> map = s.chars().mapToObj(c -> (char)c).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+    Map<Character, Long> map = s.chars()
+        .mapToObj(c -> (char)c)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     return map.entrySet().stream()
         .sorted(Map.Entry.<Character, Long>comparingByValue().reversed())
         .map(e -> String.valueOf(e.getKey()).repeat(e.getValue().intValue()))
@@ -141,19 +156,27 @@ public int lengthOfLongestSubstring(String s) {
 ## 13. Jewels and Stones 
 ```
 public int numJewelsInStones(String jewels, String stones) {
-    Set<Character> jewelSet = jewels.chars().mapToObj(c -> (char)c).collect(Collectors.toSet());
-    return (int) stones.chars().filter(c -> jewelSet.contains((char)c)).count();
+    Set<Character> jewelSet = jewels.chars()
+        .mapToObj(c -> (char)c)
+        .collect(Collectors.toSet());
+    return (int) stones.chars()
+        .filter(c -> jewelSet.contains((char)c))
+        .count();
 }
 ```
 
-## 14. Find All Anagrams in a String 
+## 14. All Anagrams in a String 
 ```
 public List<Integer> findAnagrams(String s, String p) {
-    Map<Character, Long> pMap = p.chars().mapToObj(c -> (char)c).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+    Map<Character, Long> pMap = p.chars()
+        .mapToObj(c -> (char)c)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     List<Integer> result = new ArrayList<>();
     for (int i = 0; i <= s.length() - p.length(); i++) {
         String sub = s.substring(i, i + p.length());
-        Map<Character, Long> sMap = sub.chars().mapToObj(c -> (char)c).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        Map<Character, Long> sMap = sub.chars()
+            .mapToObj(c -> (char)c)
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         if (pMap.equals(sMap)) result.add(i);
     }
     return result;
@@ -172,4 +195,91 @@ public int romanToInt(String s) {
     }
     return res;
 }
+```
+
+## 16. Valid Sudoku
+```
+public boolean isValidSudoku(char[][] board) {
+    Set<String> seen = new HashSet<>();
+    return IntStream.range(0, 9)
+        .allMatch(i ->IntStream.range(0, 9)
+            .allMatch(j -> {
+                char c = board[i][j];
+                if (c == '.') return true;
+                return seen.add(c + "row" + i) &&
+                       seen.add(c + "col" + j) &&
+                       seen.add(c + "block" + i/3 + j/3);
+            })
+    );
+}
+```
+
+## 17. Contiguous Array
+```
+public int findMaxLength(int[] nums) {
+    Map<Integer, Integer> firstIndex = new HashMap<>();
+    firstIndex.put(0, -1);
+    int balance = 0;
+    return IntStream.range(0, nums.length)
+            .reduce(0, (max, i) -> {
+                balance += nums[i] == 0 ? -1 : 1;
+                firstIndex.putIfAbsent(balance, i);
+                return Math.max(max, i - firstIndex.get(balance));
+            });
+}
+```
+
+## 18. 4 Sum 
+```
+public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
+    Map<Integer, Long> sum12 = Arrays.stream(nums1)
+            .boxed()
+            .flatMap(a -> Arrays.stream(nums2)
+                .mapToObj(b -> a + b))
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+    return (int) Arrays.stream(nums3)
+            .boxed()
+            .flatMap(c -> Arrays.stream(nums4)
+                .mapToObj(d -> -(c + d)))
+            .mapToLong(need -> sum12.getOrDefault(need, 0L))
+            .sum();
+}
+```
+
+## 19. Minimum Window Substring 
+```
+public String minWindow(String s, String t) {
+    Map<Character, Long> targetCount = t.chars()
+            .mapToObj(c -> (char) c)
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+    Map<Character, Long> windowCount = new HashMap<>();
+    int[] best = {-1, 0, 0}; 
+
+    IntStream.range(0, s.length())
+        .forEach(right -> {
+            char c = s.charAt(right);
+            windowCount.merge(c, 1L, Long::sum);
+            while (isValid(windowCount, targetCount)) {
+                if (best[0] == -1 || right - best[1] + 1 < best[0]) {
+                    best[0] = right - best[1] + 1;
+                    best[1] = left;
+                    best[2] = right;
+                }
+                char leftChar = s.charAt(left++);
+                windowCount.merge(leftChar, -1L, Long::sum);
+                windowCount.remove(leftChar, 0L);
+            }
+    });
+
+    return best[0] == -1
+        ? ""
+        : s.substring(best[1], best[2] + 1);
+}
+
+private boolean isValid(Map<Character, Long> window, Map<Character, Long> target) {
+    return target.entrySet().stream()
+            .allMatch(e -> window.getOrDefault(e.getKey(), 0L) >= e.getValue());
+} 
 ```
