@@ -4,13 +4,15 @@
 ### Description: Return indices of two numbers that add up to target.
 ```
 public int[] twoSum(int[] nums, int target) {
-    Map<Integer, Integer> map = new HashMap<>();
-    for (int i = 0; i < nums.length; i++) {
-        int complement = target - nums[i];
-        if (map.containsKey(complement)) return new int[] { map.get(complement), i };
-        map.put(nums[i], i);
-    }
-    return new int[0];
+    return IntStream.range(0, nums.length)
+            .boxed()
+            .flatMap(i ->
+                IntStream.range(i + 1, nums.length)
+                    .filter(j -> nums[i] + nums[j] == target)
+                    .mapToObj(j -> new int[]{i, j})
+            )
+            .findFirst()
+            .orElse(new int[0]);
 }
 ```
 
@@ -47,8 +49,9 @@ public int[] topKFrequent(int[] nums, int k) {
 ### Description: Return the index of the first character that appears only once (-1 if none).  
 ```
 public int firstUniqChar(String s) {
-    Map<Character, Integer> counts = new HashMap<>();
-    for (char c : s.toCharArray()) counts.put(c, counts.getOrDefault(c, 0) + 1);
+    Map<Character, Long> counts = s.chars()
+        .mapToObj(c -> (char) c)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     return IntStream.range(0, s.length())
         .filter(i -> counts.get(s.charAt(i)) == 1)
         .findFirst().orElse(-1);
@@ -87,12 +90,18 @@ public int subarraySum(int[] nums, int k) {
     int count = 0, sum = 0;
     Map<Integer, Integer> preSum = new HashMap<>();
     preSum.put(0, 1);
-    for (int n : nums) {
-        sum += n;
-        if (preSum.containsKey(sum - k)) count += preSum.get(sum - k);
-        preSum.put(sum, preSum.getOrDefault(sum, 0) + 1);
-    }
-    return count;
+    return IntStream.of(nums)
+        .collect(
+            State::new,
+            (s, n) -> {
+                s.sum += n;
+                s.count += s.preSum.getOrDefault(s.sum - k, 0);
+                s.preSum.put(s.sum, s.preSum.getOrDefault(s.sum, 0) + 1);
+            },
+            (a, b) -> {
+                throw new UnsupportedOperationException("Parallel not supported");
+            })
+        .count();
 }
 ```
 
@@ -117,9 +126,13 @@ public boolean wordPattern(String pattern, String s) {
     String[] words = s.split(" ");
     if (words.length != pattern.length()) return false;
     Map index = new HashMap();
-    for (Integer i = 0; i < words.length; ++i)
-        if (index.put(pattern.charAt(i), i) != index.put(words[i], i)) return false;
-    return true;
+    return IntStream.range(0, words.length)
+        .allMatch(i ->
+            Objects.equals(
+                index.put(pattern.charAt(i), i),
+                index.put(words[i], i)
+            )
+        );
 }
 ```
 
@@ -155,13 +168,19 @@ public String frequencySort(String s) {
 ```
 public int lengthOfLongestSubstring(String s) {
     Map<Character, Integer> map = new HashMap<>();
-    int max = 0;
-    for (int j = 0, i = 0; j < s.length(); j++) {
-        if (map.containsKey(s.charAt(j))) i = Math.max(map.get(s.charAt(j)), i);
-        max = Math.max(max, j - i + 1);
-        map.put(s.charAt(j), j + 1);
-    }
-    return max;
+    AtomicInteger left = new AtomicInteger(0);
+    AtomicInteger max = new AtomicInteger(0);
+
+    IntStream.range(0, s.length()).forEach(j -> {
+        char c = s.charAt(j);
+        if (map.containsKey(c)) {
+            left.set(Math.max(map.get(c), left.get()));
+        }
+        max.set(Math.max(max.get(), j - left.get() + 1));
+        map.put(c, j + 1);
+    });
+
+    return max.get();
 }
 ```
 
@@ -202,13 +221,17 @@ public List<Integer> findAnagrams(String s, String p) {
 ```
 public int romanToInt(String s) {
     Map<Character, Integer> map = Map.of('I', 1, 'V', 5, 'X', 10, 'L', 50, 'C', 100, 'D', 500, 'M', 1000);
-    int res = 0, prev = 0;
-    for (int i = s.length() - 1; i >= 0; i--) {
-        int curr = map.get(s.charAt(i));
-        res += (curr < prev) ? -curr : curr;
-        prev = curr;
-    }
-    return res;
+    AtomicInteger prev = new AtomicInteger(0);
+    AtomicInteger res = new AtomicInteger(0);
+
+    IntStream.iterate(s.length() - 1, i -> i >= 0, i -> i - 1)
+        .map(i -> map.get(s.charAt(i)))
+        .forEach(curr -> {
+            res.addAndGet(curr < prev.get() ? -curr : curr);
+            prev.set(curr);
+        });
+
+    return res.get();
 }
 ```
 
@@ -269,36 +292,29 @@ public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
 ### Description: Return the smallest substring of s that contains all characters of t (including duplicates).
 ```
 public String minWindow(String s, String t) {
-    Map<Character, Long> targetCount = t.chars()
-            .mapToObj(c -> (char) c)
-            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+    Map<Character, Integer> need = new HashMap<>();
+    t.chars()
+        .forEach(c -> need.merge((char) c, 1, Integer::sum));
 
-    Map<Character, Long> windowCount = new HashMap<>();
-    int[] best = {-1, 0, 0}; 
+    int left = 0, count = t.length();
+    int minLen = Integer.MAX_VALUE, start = 0;
 
-    IntStream.range(0, s.length())
-        .forEach(right -> {
-            char c = s.charAt(right);
-            windowCount.merge(c, 1L, Long::sum);
-            while (isValid(windowCount, targetCount)) {
-                if (best[0] == -1 || right - best[1] + 1 < best[0]) {
-                    best[0] = right - best[1] + 1;
-                    best[1] = left;
-                    best[2] = right;
-                }
-                char leftChar = s.charAt(left++);
-                windowCount.merge(leftChar, -1L, Long::sum);
-                windowCount.remove(leftChar, 0L);
+    for (int right = 0; right < s.length(); right++) {
+        char c = s.charAt(right);
+        if (need.getOrDefault(c, 0) > 0) count--;
+        need.merge(c, -1, Integer::sum);
+
+        while (count == 0) {
+            if (right - left + 1 < minLen) {
+                minLen = right - left + 1;
+                start = left;
             }
-    });
+            char l = s.charAt(left++);
+            if (need.merge(l, 1, Integer::sum) > 0) count++;
+        }
+    }
 
-    return best[0] == -1
+    return minLen == Integer.MAX_VALUE 
         ? ""
-        : s.substring(best[1], best[2] + 1);
-}
-
-private boolean isValid(Map<Character, Long> window, Map<Character, Long> target) {
-    return target.entrySet().stream()
-            .allMatch(e -> window.getOrDefault(e.getKey(), 0L) >= e.getValue());
-} 
+        : s.substring(start, start + minLen);
 ```
